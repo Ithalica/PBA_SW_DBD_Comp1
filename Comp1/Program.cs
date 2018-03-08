@@ -1,13 +1,8 @@
-﻿using DBD_Comp1.App_Data;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
-using Microsoft.SqlServer.Management.Common;
-using Microsoft.SqlServer.Management.Smo;
 
-namespace DBD_Comp1
+namespace Comp1
 {
     class Program
     {
@@ -18,18 +13,12 @@ namespace DBD_Comp1
 
         static void Main(string[] args)
         {
-            //_conString = System.Configuration.ConfigurationManager.ConnectionStrings["Model1Container"].ConnectionString;
-            // ResetDatabase();
-
-
             //GetDepartments with employee count
-            var departmentsWithEmployeeCount = GetDepartments();
-
+            var departments = GetDepartments();
             var department = GetDepartment(5);
-
         }
-        
-        static DepartmentWithSlaveCount GetDepartment(int id)
+
+        static Department GetDepartment(int id)
         {
             using (var conn = new SqlConnection(_conString))
             {
@@ -40,7 +29,7 @@ namespace DBD_Comp1
 
                     var p = cmd.Parameters.AddWithValue("DNumber", id);
 
-                    DepartmentWithSlaveCount item = null;
+                    Department item = null;
 
                     conn.Open();
                     SqlDataReader reader = cmd.ExecuteReader();
@@ -48,12 +37,12 @@ namespace DBD_Comp1
                     {
                         while (reader.Read())
                         {
-                            item = new DepartmentWithSlaveCount();
+                            item = new Department();
                             item.Id = reader.GetInt32(1);
                             item.Name = reader.GetString(0);
                             item.ManagerSSN = reader.GetDecimal(2);
                             item.ManagerStartDate = reader.GetDateTime(3);
-                            item.SlaveCount = reader.GetInt32(4);
+                            item.EmployeeCount = reader.GetInt32(4);
 
                         }
                     }
@@ -61,9 +50,10 @@ namespace DBD_Comp1
                 }
             }
         }
-        static IList<DepartmentWithSlaveCount> GetDepartments()
+
+        static IList<Department> GetDepartments()
         {
-            List<DepartmentWithSlaveCount> list = new List<DepartmentWithSlaveCount>();
+            List<Department> list = new List<Department>();
             using (var conn = new SqlConnection(_conString))
             {
                 using (var cmd = conn.CreateCommand())
@@ -77,12 +67,12 @@ namespace DBD_Comp1
                     {
                         while (reader.Read())
                         {
-                            var item = new DepartmentWithSlaveCount();
+                            var item = new Department();
                             item.Id = reader.GetInt32(1);
                             item.Name = reader.GetString(0);
                             item.ManagerSSN = reader.GetDecimal(2);
                             item.ManagerStartDate = reader.GetDateTime(3);
-                            item.SlaveCount = reader.GetInt32(4);
+                            item.EmployeeCount = reader.GetInt32(4);
                             list.Add(item);
                         }
                     }
@@ -90,19 +80,5 @@ namespace DBD_Comp1
             }
             return list;
         }
-    }
-
-    class Department
-    {
-
-        public string Name { get; set; }
-        public int Id { get; set; }
-        public decimal ManagerSSN { get; set; }
-        public DateTime ManagerStartDate { get; set; }
-    }
-
-    class DepartmentWithSlaveCount : Department
-    {
-        public int SlaveCount { get; set; }
     }
 }
